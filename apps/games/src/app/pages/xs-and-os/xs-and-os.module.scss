@@ -1,0 +1,24 @@
+$size: 200px;
+
+.content {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+}
+.row {
+    display: flex;
+
+    .cell {
+        height: $size;
+        width: $size;
+        border: black 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        span {
+            font-size: $size - 20px;
+        }
+    }
+}
