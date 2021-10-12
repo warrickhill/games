@@ -1,0 +1,47 @@
+$size: 100px;
+
+.content {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+
+    .board {
+        display: flex;
+
+        .col {
+            display: flex;
+            flex-direction: column-reverse;
+            border: dimgray 1px solid;
+            width: $size;
+            height: $size * 6;
+
+            .cell {
+                height: $size;
+                width: $size;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                span {
+                    border-radius: 50%;
+                    border: dimgray 1px solid;
+                    height: $size - 10px;
+                    width: $size - 10px;
+                }
+
+                &.Red {
+                    span {
+                        background-color: Red;
+                    }
+                }
+
+                &.Yellow {
+                    span {
+                        background-color: yellow;
+                    }
+                }
+            }
+        }
+    }
+}
