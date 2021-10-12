@@ -1,5 +1,5 @@
 import styles from "./connect4.module.scss"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 /* eslint-disable-next-line */
 export interface Connect4Props {}
@@ -19,78 +19,113 @@ const initBoard = range.reduce((b: any, c: string) => {
 const initScores = { [Players.Red]: 0, [Players.Yellow]: 0 }
 
 const isWinner = (cells: any, player: string) => {
-    return (
-        range.some((row) => {
-            return range.every((col) => {
-                return player === cells[row][col]
-            })
-        }) ||
-        range.some((col) => {
-            return range.every((row) => {
-                return player === cells[row][col]
-            })
-        }) ||
-        [
-            ["a", "a"],
-            ["b", "b"],
-            ["c", "c"],
-        ].every(([row, col]) => {
-            return player === cells[row][col]
-        }) ||
-        [
-            ["a", "c"],
-            ["b", "b"],
-            ["c", "a"],
-        ].every(([row, col]) => {
-            return player === cells[row][col]
-        })
-    )
+    let counter = 0
+    console.log("Finding winner")
+    for (let x = 0; x < 7; x++) {
+        const col = range[x]
+        counter = 0
+        if (cells[col].length >= 4) {
+            for (const cell of cells[col]) {
+                if (cell === player) {
+                    counter++
+                } else {
+                    counter = 0
+                }
+                if (counter >= 4) {
+                    return true
+                }
+            }
+        }
+        for (let y = 0; y < cells[col].length; y++) {
+            let c = x
+            counter = 0
+            while (
+                cells[range[c]] !== undefined &&
+                cells[range[c]][y] === player
+            ) {
+                counter++
+                c++
+                if (counter >= 4) {
+                    return true
+                }
+            }
+        }
+
+        for (let y = 0; y < cells[col].length; y++) {
+            let c = x
+            let p = y
+            counter = 0
+            while (
+                cells[range[c]] !== undefined &&
+                cells[range[c]][p] === player
+            ) {
+                counter++
+                c++
+                if (y <= 2) {
+                    p++
+                } else {
+                    p--
+                }
+                if (counter >= 4) {
+                    return true
+                }
+            }
+        }
+    }
+
+    return false
 }
 
 const ai = (cells: any, player: string) => {
+    const range = ["d", "c", "e", "b", "f", "a", "g"]
     const move = (c: any, turn: string, level = 1) => {
         let score = 0
-        for (const row of range) {
-            for (const col of range) {
-                if (c[row][col] !== "") {
-                    continue
+        if (level > 2) {
+            return score
+        }
+        for (const col of range) {
+            if (c[col].length >= 6) {
+                continue
+            }
+            const update = {
+                ...c,
+                [col]: [...c[col], turn],
+            }
+            if (isWinner(update, turn)) {
+                if (turn !== player && level === 1) {
+                    return -100000000
                 }
-                const update = { ...c, [row]: { ...c[row], [col]: turn } }
-                if (isWinner(update, turn)) {
-                    if (turn !== player && level === 1) {
-                        return -100000000
-                    }
-                    score += turn === player ? 1 : -2
-                } else {
-                    score += move(
-                        update,
-                        turn === Players.Red ? Players.Yellow : Players.Red,
-                        level + 1
-                    )
-                }
+                score += turn === player ? 1 : -2
+            } else {
+                score += move(
+                    update,
+                    turn === Players.Red ? Players.Yellow : Players.Red,
+                    level + 1
+                )
             }
         }
         return score
     }
-    let combo: string[] = []
+    let combo = ""
     let best = -100000001
-    for (const row of range) {
-        for (const col of range) {
-            if (cells[row][col] !== "") {
-                continue
-            }
-            const update = { ...cells, [row]: { ...cells[row], [col]: player } }
-            if (isWinner(update, player)) {
-                return [row, col]
-            }
-            const score = move(
-                update,
-                player === Players.Red ? Players.Yellow : Players.Red
-            )
-            if (score > best) {
-                best = score
-                combo = [row, col]
-            }
+    for (const col of range) {
+        if (cells[col].length >= 6) {
+            continue
+        }
+        const update = {
+            ...cells,
+            [col]: [...cells[col], player],
+        }
+        if (isWinner(update, player)) {
+            return col
+        }
+        const score = move(
+            update,
+            player === Players.Red ? Players.Yellow : Players.Red
+        )
+        if (score > best) {
+            best = score
+            combo = col
         }
     }
     return combo
@@ -105,12 +140,12 @@ export function Connect4(props: Connect4Props) {
     const [draw, setDraw] = useState(false)
     const [scores, setScores] = useState(initScores)
 
-    // useEffect(() => {
-    //     if (whoseGo === aiPlayer) {
-    //         const [row, col] = ai(cells, aiPlayer)
-    //         click(col)
-    //     }
-    // }, [whoseGo])
+    useEffect(() => {
+        if (whoseGo === aiPlayer) {
+            const col = ai(cells, aiPlayer)
+            click(col)
+        }
+    }, [whoseGo])
 
     const click = (col: string) => {
         console.log({ cells, col, initBoard })
@@ -122,37 +157,37 @@ export function Connect4(props: Connect4Props) {
             [col]: [...cells[col], whoseGo],
         }
 
-        // const w = isWinner(update, whoseGo)
-        //
-        // const d =
-        //     !w &&
-        //     !range.some((col) => {
-        //         return update[col].length < 6
-        //     })
+        const w = isWinner(update, whoseGo)
+
+        const d =
+            !w &&
+            !range.some((col) => {
+                return update[col].length < 6
+            })
 
         setCells(update)
-        // if (w) {
-        //     setWinner(true)
-        //     setScores({ ...scores, [whoseGo]: scores[whoseGo] + 1 })
-        //     setTimeout(() => {
-        //         setCells(initBoard)
-        //         setWhoseGo(
-        //             whoseGo === Players.Red ? Players.Yellow : Players.Red
-        //         )
-        //         setWinner(false)
-        //     }, 2000)
-        // } else if (d) {
-        //     setDraw(true)
-        //     setTimeout(() => {
-        //         setCells(initBoard)
-        //         setWhoseGo(
-        //             whoseGo === Players.Red ? Players.Yellow : Players.Red
-        //         )
-        //         setDraw(false)
-        //     }, 2000)
-        // } else {
-        setWhoseGo(whoseGo === Players.Red ? Players.Yellow : Players.Red)
-        // }
+        if (w) {
+            setWinner(true)
+            setScores({ ...scores, [whoseGo]: scores[whoseGo] + 1 })
+            setTimeout(() => {
+                setCells(initBoard)
+                setWhoseGo(
+                    whoseGo === Players.Red ? Players.Yellow : Players.Red
+                )
+                setWinner(false)
+            }, 2000)
+        } else if (d) {
+            setDraw(true)
+            setTimeout(() => {
+                setCells(initBoard)
+                setWhoseGo(
+                    whoseGo === Players.Red ? Players.Yellow : Players.Red
+                )
+                setDraw(false)
+            }, 2000)
+        } else {
+            setWhoseGo(whoseGo === Players.Red ? Players.Yellow : Players.Red)
+        }
     }
 
     const reset = () => {
