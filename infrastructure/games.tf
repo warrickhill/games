@@ -178,6 +178,8 @@ module "game_files" {
 }
 
 resource "aws_s3_bucket_object" "static_files" {
+  provider = aws.use1
+  
   for_each = module.game_files.files
 
   bucket       = aws_s3_bucket.game_bucket.bucket
