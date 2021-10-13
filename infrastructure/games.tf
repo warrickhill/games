@@ -179,7 +179,7 @@ module "game_files" {
 
 resource "aws_s3_bucket_object" "static_files" {
   provider = aws.use1
-  
+
   for_each = module.game_files.files
 
   bucket       = aws_s3_bucket.game_bucket.bucket
@@ -195,4 +195,10 @@ resource "aws_s3_bucket_object" "static_files" {
   # Unless the bucket has encryption enabled, the ETag of each object is an
   # MD5 hash of that object.
   etag = each.value.digests.md5
+}
+
+resource "null_resource" "invalidate_cache" {
+  provisioner "local-exec" {
+    command = "aws --profile=hikingduck cloudfront create-invalidation --distribution-id=${aws_cloudfront_distribution.game_distribution.id} --paths=/*"
+  }
 }
