@@ -165,7 +165,7 @@ export function XsAndOs(props: XsAndOsProps) {
 
     return (
         <div className={styles.content}>
-            <div>
+            <div className={styles.board}>
                 {range.map((row) => (
                     <div key={row} className={styles.row}>
                         {range.map((col) => (
@@ -174,7 +174,9 @@ export function XsAndOs(props: XsAndOsProps) {
                                 className={styles.cell}
                                 onClick={() => click(row, col)}
                             >
-                                <span>{cells[row][col]}</span>
+                                <span className={styles[cells[row][col]]}>
+                                    {cells[row][col]}
+                                </span>
                             </div>
                         ))}
                     </div>
