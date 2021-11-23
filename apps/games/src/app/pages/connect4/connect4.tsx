@@ -1,12 +1,14 @@
 import styles from "./connect4.module.scss"
 import { useEffect, useState } from "react"
+import { useDispatch } from "react-redux"
+import { Games, Players, scoresActions } from "../../store/scores.slice"
 
 /* eslint-disable-next-line */
 export interface Connect4Props {}
 
-enum Players {
-    Red = "Red",
-    Yellow = "Yellow",
+const Tokens: any = {
+    [Players.Player1]: "Red",
+    [Players.Ai]: "Yellow",
 }
 
 const range = ["a", "b", "c", "d", "e", "f", "g"]
@@ -16,9 +18,7 @@ const initBoard = range.reduce((b: any, c: string) => {
     return b
 }, {})
 
-const initScores = { [Players.Red]: 0, [Players.Yellow]: 0 }
-
-const isWinner = (cells: any, player: string) => {
+const isWinner = (cells: any, player: Players) => {
     let counter = 0
     console.log("Finding winner")
     for (let x = 0; x < 7; x++) {
@@ -76,9 +76,9 @@ const isWinner = (cells: any, player: string) => {
     return false
 }
 
-const ai = (cells: any, player: string) => {
+const ai = (cells: any, player: Players) => {
     const range = ["d", "c", "e", "b", "f", "a", "g"]
-    const move = (c: any, turn: string, level = 1) => {
+    const move = (c: any, turn: Players, level = 1) => {
         let score = 0
         if (level > 2) {
             return score
@@ -99,7 +99,7 @@ const ai = (cells: any, player: string) => {
             } else {
                 score += move(
                     update,
-                    turn === Players.Red ? Players.Yellow : Players.Red,
+                    turn === Players.Player1 ? Players.Ai : Players.Player1,
                     level + 1
                 )
             }
@@ -121,7 +121,7 @@ const ai = (cells: any, player: string) => {
         }
         const score = move(
             update,
-            player === Players.Red ? Players.Yellow : Players.Red
+            player === Players.Player1 ? Players.Ai : Players.Player1
         )
         if (score > best) {
             best = score
@@ -131,14 +131,12 @@ const ai = (cells: any, player: string) => {
     return combo
 }
 
-const aiPlayer = Players.Yellow
+const aiPlayer = Players.Ai
 
 export function Connect4(props: Connect4Props) {
     const [cells, setCells] = useState(initBoard)
-    const [whoseGo, setWhoseGo] = useState(Players.Red)
-    const [winner, setWinner] = useState(false)
-    const [draw, setDraw] = useState(false)
-    const [scores, setScores] = useState(initScores)
+    const [whoseGo, setWhoseGo] = useState(Players.Player1)
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (whoseGo === aiPlayer) {
@@ -167,37 +165,34 @@ export function Connect4(props: Connect4Props) {
 
         setCells(update)
         if (w) {
-            setWinner(true)
-            setScores({ ...scores, [whoseGo]: scores[whoseGo] + 1 })
+            dispatch(
+                scoresActions.incr({ player: whoseGo, game: Games.Connect4 })
+            )
             setTimeout(() => {
                 setCells(initBoard)
                 setWhoseGo(
-                    whoseGo === Players.Red ? Players.Yellow : Players.Red
+                    whoseGo === Players.Player1 ? Players.Ai : Players.Player1
                 )
-                setWinner(false)
             }, 2000)
         } else if (d) {
-            setDraw(true)
             setTimeout(() => {
                 setCells(initBoard)
                 setWhoseGo(
-                    whoseGo === Players.Red ? Players.Yellow : Players.Red
+                    whoseGo === Players.Player1 ? Players.Ai : Players.Player1
                 )
-                setDraw(false)
             }, 2000)
         } else {
-            setWhoseGo(whoseGo === Players.Red ? Players.Yellow : Players.Red)
+            setWhoseGo(
+                whoseGo === Players.Player1 ? Players.Ai : Players.Player1
+            )
         }
     }
 
     const reset = () => {
         setCells(initBoard)
-        setScores(initScores)
-        setWhoseGo(Players.Red)
-        setWinner(false)
-        setDraw(false)
+        setWhoseGo(Players.Player1)
     }
-
+    console.log(cells)
     return (
         <div className={styles.content}>
             <div className={styles.board}>
@@ -207,36 +202,18 @@ export function Connect4(props: Connect4Props) {
                         className={styles.col}
                         onClick={() => click(col)}
                     >
-                        {cells[col].map((p: string, i: number) => (
+                        {cells[col].map((p: Players, i: number) => (
                             <div
                                 key={i}
-                                className={`${styles.cell} ${styles[p]}`}
+                                className={`${styles.cell} ${
+                                    styles[`player-${p}`]
+                                }`}
                             >
                                 <span />
                             </div>
                         ))}
                     </div>
                 ))}
-            </div>
-            <div>
-                {winner && <h1>Winner!!!!</h1>}
-                {draw && <h1>Draw!!!!</h1>}
-                {!winner && !draw && <h2>{whoseGo}'s go</h2>}
-                <button onClick={reset}>RESET</button>
-                <table>
-                    <thead>
-                        <th>
-                            <td>{Players.Red}</td>
-                            <td>{Players.Yellow}</td>
-                        </th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{scores[Players.Red]}</td>
-                            <td>{scores[Players.Yellow]}</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     )

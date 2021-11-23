@@ -30,13 +30,13 @@ $size: 100px;
                     width: $size - 10px;
                 }
 
-                &.Red {
+                &.player-0 {
                     span {
                         background-color: Red;
                     }
                 }
 
-                &.Yellow {
+                &.player-1 {
                     span {
                         background-color: yellow;
                     }

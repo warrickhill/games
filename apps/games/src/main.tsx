@@ -7,7 +7,17 @@ import App from "./app/app"
 import { configureStore } from "@reduxjs/toolkit"
 import { Provider } from "react-redux"
 
-import { SCORES_FEATURE_KEY, scoresReducer } from "./app/store/scores.slice"
+import {
+    SCORES_FEATURE_KEY,
+    scoresReducer,
+    ScoresState,
+} from "./app/store/scores.slice"
+
+const preloadedStateJson = localStorage.getItem("reduxState")
+const preloadedState =
+    preloadedStateJson !== null ? JSON.parse(preloadedStateJson) : {}
+
+export type RootState = { [SCORES_FEATURE_KEY]: ScoresState }
 
 const store = configureStore({
     reducer: { [SCORES_FEATURE_KEY]: scoresReducer },
@@ -16,6 +26,11 @@ const store = configureStore({
     devTools: process.env.NODE_ENV !== "production",
     // Optional Redux store enhancers
     enhancers: [],
+    preloadedState,
+})
+
+store.subscribe(() => {
+    localStorage.setItem("reduxState", JSON.stringify(store.getState()))
 })
 
 ReactDOM.render(
