@@ -1,12 +1,14 @@
 import styles from "./xs-and-os.module.scss"
 import { useEffect, useState } from "react"
+import { useDispatch } from "react-redux"
+import { Games, Players, scoresActions } from "../../store/scores.slice"
 
 /* eslint-disable-next-line */
 export interface XsAndOsProps {}
 
-enum Players {
-    X = "X",
-    O = "O",
+const Tokens: any = {
+    [Players.Player1]: "X",
+    [Players.Ai]: "O",
 }
 
 const initBoard: any = {
@@ -14,11 +16,10 @@ const initBoard: any = {
     b: { a: "", b: "", c: "" },
     c: { a: "", b: "", c: "" },
 }
-const initScores = { [Players.X]: 0, [Players.O]: 0 }
 
 const range = ["a", "b", "c"]
 
-const isWinner = (cells: any, player: string) => {
+const isWinner = (cells: any, player: Players) => {
     return (
         range.some((row) => {
             return range.every((col) => {
@@ -47,8 +48,8 @@ const isWinner = (cells: any, player: string) => {
     )
 }
 
-const ai = (cells: any, player: string) => {
-    const move = (c: any, turn: string, level = 1) => {
+const ai = (cells: any, player: Players) => {
+    const move = (c: any, turn: Players, level = 1) => {
         let score = 0
         for (const row of range) {
             for (const col of range) {
@@ -64,7 +65,7 @@ const ai = (cells: any, player: string) => {
                 } else {
                     score += move(
                         update,
-                        turn === Players.X ? Players.O : Players.X,
+                        turn === Players.Player1 ? Players.Ai : Players.Player1,
                         level + 1
                     )
                 }
@@ -85,7 +86,7 @@ const ai = (cells: any, player: string) => {
             }
             const score = move(
                 update,
-                player === Players.X ? Players.O : Players.X
+                player === Players.Player1 ? Players.Ai : Players.Player1
             )
             if (score > best) {
                 best = score
@@ -96,18 +97,14 @@ const ai = (cells: any, player: string) => {
     return combo
 }
 
-const aiPlayer = Players.O
-
 export function XsAndOs(props: XsAndOsProps) {
     const [cells, setCells] = useState(initBoard)
-    const [whoseGo, setWhoseGo] = useState(Players.X)
-    const [winner, setWinner] = useState(false)
-    const [draw, setDraw] = useState(false)
-    const [scores, setScores] = useState(initScores)
+    const [whoseGo, setWhoseGo] = useState(Players.Player1)
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        if (whoseGo === aiPlayer) {
-            const [row, col] = ai(cells, aiPlayer)
+        if (whoseGo === Players.Ai) {
+            const [row, col] = ai(cells, Players.Ai)
             click(row, col)
         }
     }, [whoseGo])
@@ -136,31 +133,27 @@ export function XsAndOs(props: XsAndOsProps) {
 
         setCells(update)
         if (w) {
-            setWinner(true)
-            setScores({ ...scores, [whoseGo]: scores[whoseGo] + 1 })
+            dispatch(
+                scoresActions.incr({ player: whoseGo, game: Games.XsAndOs })
+            )
             setTimeout(() => {
                 setCells(initBoard)
-                setWhoseGo(whoseGo === Players.X ? Players.O : Players.X)
-                setWinner(false)
+                setWhoseGo(
+                    whoseGo === Players.Player1 ? Players.Ai : Players.Player1
+                )
             }, 2000)
         } else if (d) {
-            setDraw(true)
             setTimeout(() => {
                 setCells(initBoard)
-                setWhoseGo(whoseGo === Players.X ? Players.O : Players.X)
-                setDraw(false)
+                setWhoseGo(
+                    whoseGo === Players.Player1 ? Players.Ai : Players.Player1
+                )
             }, 2000)
         } else {
-            setWhoseGo(whoseGo === Players.X ? Players.O : Players.X)
+            setWhoseGo(
+                whoseGo === Players.Player1 ? Players.Ai : Players.Player1
+            )
         }
-    }
-
-    const reset = () => {
-        setCells(initBoard)
-        setScores(initScores)
-        setWhoseGo(Players.X)
-        setWinner(false)
-        setDraw(false)
     }
 
     return (
@@ -175,32 +168,12 @@ export function XsAndOs(props: XsAndOsProps) {
                                 onClick={() => click(row, col)}
                             >
                                 <span className={styles[cells[row][col]]}>
-                                    {cells[row][col]}
+                                    {Tokens[cells[row][col]] || ``}
                                 </span>
                             </div>
                         ))}
                     </div>
                 ))}
-            </div>
-            <div>
-                {winner && <h1>Winner!!!!</h1>}
-                {draw && <h1>Draw!!!!</h1>}
-                {!winner && !draw && <h2>{whoseGo}'s go</h2>}
-                <button onClick={reset}>RESET</button>
-                <table>
-                    <thead>
-                        <th>
-                            <td>X</td>
-                            <td>O</td>
-                        </th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{scores[Players.X]}</td>
-                            <td>{scores[Players.O]}</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     )

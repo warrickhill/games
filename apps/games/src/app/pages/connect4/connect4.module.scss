@@ -8,6 +8,7 @@ $size: 100px;
 
     .board {
         display: flex;
+        background-color: #143155;
 
         .col {
             display: flex;
@@ -28,15 +29,16 @@ $size: 100px;
                     border: dimgray 1px solid;
                     height: $size - 10px;
                     width: $size - 10px;
+                    background-color: white;
                 }
 
-                &.Red {
+                &.player-0 {
                     span {
                         background-color: Red;
                     }
                 }
 
-                &.Yellow {
+                &.player-1 {
                     span {
                         background-color: yellow;
                     }
