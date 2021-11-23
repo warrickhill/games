@@ -13,6 +13,8 @@ const Tokens: any = {
 
 const range = ["a", "b", "c", "d", "e", "f", "g"]
 
+const h = [0, 1, 2, 3, 4, 5]
+
 const initBoard = range.reduce((b: any, c: string) => {
     b[c] = []
     return b
@@ -202,16 +204,20 @@ export function Connect4(props: Connect4Props) {
                         className={styles.col}
                         onClick={() => click(col)}
                     >
-                        {cells[col].map((p: Players, i: number) => (
-                            <div
-                                key={i}
-                                className={`${styles.cell} ${
-                                    styles[`player-${p}`]
-                                }`}
-                            >
-                                <span />
-                            </div>
-                        ))}
+                        {h.map((i: number) => {
+                            const className =
+                                cells[col][i] !== undefined
+                                    ? styles[`player-${cells[col][i]}`]
+                                    : ""
+                            return (
+                                <div
+                                    key={i}
+                                    className={`${styles.cell} ${className}`}
+                                >
+                                    <span />
+                                </div>
+                            )
+                        })}
                     </div>
                 ))}
             </div>
