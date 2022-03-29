@@ -3,8 +3,8 @@ import { Link, Route, Switch } from "react-router-dom"
 import XsAndOs from "./xs-and-os/xs-and-os"
 import Connect4 from "./connect4/connect4"
 import styles from "./pages.module.scss"
-import { useStore } from "react-redux"
 import ScoreBoard from "../component/score-board/score-board"
+import BattleShips from "./battle-ships/battle-ships"
 
 /* eslint-disable-next-line */
 export interface PageProps {}
@@ -21,6 +21,9 @@ export function Pages(props: PageProps) {
                         <div>
                             <Link to="/connect4">Connect 4</Link>
                         </div>
+                        <div>
+                            <Link to="/battle-ships">Battle Ships</Link>
+                        </div>
                     </div>
                 </Route>
                 <Route path="/xs-and-os" exact>
@@ -28,6 +31,9 @@ export function Pages(props: PageProps) {
                 </Route>
                 <Route path="/connect4" exact>
                     <Connect4 />
+                </Route>
+                <Route path="/battle-ships" exact>
+                    <BattleShips />
                 </Route>
             </Switch>
             <div className={styles.scores}>
